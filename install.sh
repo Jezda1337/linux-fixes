@@ -111,7 +111,7 @@ EOF
   fi
 
   if [ -f "$HOME/scripts/CapsLockDelayFixer.sh" ]; then
-    autoStartFile "CapsLockDelayFixer2" "bash -c sleep 10 && '$HOME/scripts/CapsLockDelayFixer.sh'" "CapsLockDelayFixer" "Caps Lock Delay Fixer"
+    autoStartFile "CapsLockDelayFixer2" "bash -c 'sleep 10; $HOME/scripts/CapsLockDelayFixer.sh'" "CapsLockDelayFixer" "Caps Lock Delay Fixer"
   fi
 
 }
