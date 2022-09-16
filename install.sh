@@ -1,7 +1,20 @@
 #! /bin/bash
 
+##################################################
+# Author: Radoje
+# Github: github.com/Jezda1337
+# Version: v1.0.0
+# Date: 16.09.2022
+# Description: This script solves the problem of slow scroll on chromium based applications and caps lock delay.
+# Usage: The script only support base distros like debian, arch and fedora
+#       example: ./install.sh -d debian
+# Flags: -d stands for distribution, the three most used distros are debian, arch and fedora
+##################################################
+
+# Globals
 declare -a DISTRIBUTIONS=("debian" "arch" "fedora")
 
+# Main func
 main() {
   local DISTRIBUTION=""
   while getopts "d:" OPTION; do
@@ -31,7 +44,13 @@ main() {
   else
     autoStartFile "imwheel" "imwheel -k -b '45'" "Imwheel" "Auto start Imwheel."
   fi
+
+  exit 0
 }
+
+########################################################
+# Imwheel configuration
+########################################################
 
 installImwheel() {
   if [ ! -x "$(command -v imwheel)" ]; then
@@ -47,11 +66,10 @@ installImwheel() {
   else
     echo "Imwheel is already installed."
   fi
-
   capsDelay
 }
 
-
+# function for configure imwheel
 imwheelConfigFile() {
   if [ ! -f ~/.imwheelrc ]; then
     cat >~/.imwheelrc<<EOF
