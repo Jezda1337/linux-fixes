@@ -1,37 +1,67 @@
-#!/bin/bash
+#! /bin/bash
+
+declare -a DISTRIBUTIONS=("debian" "arch" "fedora")
 
 main() {
-  # checking for params
-  if [ $# -eq 0 ]; then
-    echo "No arguments provided"
+  local DISTRIBUTION=""
+  while getopts "d:" OPTION; do
+    case "$OPTION" in
+      d)
+        DISTRIBUTION="${OPTARG,,}";;
+      ?)
+        helpMessage;;
+    esac
+  done
+  
+  #checking for imwheel is it installed already or not
+  if [ "$DISTRIBUTION" != "" ]; then
+    installImwheel "$DISTRIBUTION"
+  else
+    echo "you have to use -d flag. -d stands for distribution. use -d to pass your base distribution"
+    echo "example: ./install.sh -d debian"
     exit 1
   fi
 
-  PACKAGE_MANAGER=$1
+  imwheelConfigFile "$DISTRIBUTION"
 
-  # checking for imwheel on the system
-  if [ ! -x "$(command -v imwheel)" ]; then
-    if [ "$PACKAGE_MANAGER" == 'pacman' ] && [ -x "$(command -v pacman)" ]; then
-      sudo pacman -S imwheel -y
-    elif [ "$PACKAGE_MANAGER" != "pacman" ] && [ -x "$(command -v "$PACKAGE_MANAGER")" ]; then
-      sudo "$PACKAGE_MANAGER" install imwheel -y
-    else
-      statusMessage
-      exit 1
-    fi
+  if [ "$DISTRIBUTION" == "debian" ]; then
+    autoStartFile "imwheel" "imwheel -k -b '4 5'" "Imwheel" "Auto start Imwheel."
+  elif [ "$DISTRIBUTION" == "arch" ]; then
+    autoStartFile "imwheel" "imwheel -k -b '45'" "Imwheel" "Auto start Imwheel."
+  else
+    autoStartFile "imwheel" "imwheel -k -b '45'" "Imwheel" "Auto start Imwheel."
   fi
- 
+}
 
-  # checking for .imwheelrc config file
+installImwheel() {
+  if [ ! -x "$(command -v imwheel)" ]; then
+    if printf '%s\0' "${DISTRIBUTIONS[@]}" | grep -Fxqz -- "$1"; then
+      if [ "$1" == "arch" ]; then
+        sudo pacman -S imwheel -y
+      elif [ "$1" == "debian" ]; then
+        sudo apt install imwheel -y
+      else
+        sudo dnf install imwheel -y
+      fi
+    fi
+  else
+    echo "Imwheel is already installed."
+  fi
+
+  capsDelay
+}
+
+
+imwheelConfigFile() {
   if [ ! -f ~/.imwheelrc ]; then
     cat >~/.imwheelrc<<EOF
-    ".*"
-    None,      Up,   Button4, 1
-    None,      Down, Button5, 1
-    Control_L, Up,   Control_L|Button4
-    Control_L, Down, Control_L|Button5
-    Shift_L,   Up,   Shift_L|Button4
-    Shift_L,   Down, Shift_L|Button5
+      ".*"
+      None,      Up,   Button4, 1
+      None,      Down, Button5, 1
+      Control_L, Up,   Control_L|Button4
+      Control_L, Down, Control_L|Button5
+      Shift_L,   Up,   Shift_L|Button4
+      Shift_L,   Down, Shift_L|Button5
 EOF
   fi
 
@@ -47,36 +77,27 @@ EOF
   sed -i "s/\($TARGET_KEY *Button5, *\).*/\1$NEW_VALUE/" ~/.imwheelrc # find the string Button5, and write new value.
 
   cat ~/.imwheelrc
-  imwheel -k -b '45' # '45' means to use side buttons next/prev
 
-  AUTOSTART_DIR=~/.config/autostart/
-  # checking does $AUTOSTART_DIR dir exist, if not create one
-  if [ ! -d $AUTOSTART_DIR ]; then
-    mkdir ~/.config/autostart
+  if [ "$1" == "debian" ]; then
+    imwheel -k -b "4 5"
+  elif [ "$1" == "fedora" ]; then
+    imwheel -k -b "45"
+  else
+    imwheel -k -b "45" #NEED TO TEST THIS ONE ON ARCH BASED DISTORS!!
+  fi
+}
+
+########################################################
+# Caps Lock Delay
+########################################################
+
+capsDelay() {
+  if [ ! -d "$HOME/scripts" ]; then
+    mkdir "$HOME/scripts"
   fi
 
-  if [ -d $AUTOSTART_DIR ]; then
-    cat >$AUTOSTART_DIR/imwheel.desktop<<EOF
-    [Desktop Entry]
-    Type=Application
-    Exec=imwheel -k -b '45'
-    Name=imwheel
-    Comment=Run imwheel on startup with enabled side buttons next/prev
-EOF
-  fi
-
-  ###########################################################################
-  # This part is for CapsLock Delay
-  ###########################################################################
-
-  SCRIPTS_DIR=~/scripts
-
-  if [ ! -d $SCRIPTS_DIR ]; then
-    mkdir $SCRIPTS_DIR
-  fi
-
-  if [ -d $SCRIPTS_DIR ]; then
-    cat >$SCRIPTS_DIR/CapsLockDelayFixer.sh<<EOF
+  if [ -d "$HOME/scripts" ]; then
+        cat >"$HOME/scripts"/CapsLockDelayFixer.sh<<EOF
   xkbcomp -xkb "$DISPLAY" - | sed 's#key <CAPS>.*#key <CAPS> {\
       repeat=no,\
       type[group1]="ALPHABETIC",\
@@ -86,23 +107,29 @@ EOF
   };\
   #' | xkbcomp -w 0 - "$DISPLAY"
 EOF
-  chmod +x $SCRIPTS_DIR/CapsLockDelayFixer.sh
-fi
+  chmod +x "$HOME/scripts/CapsLockDelayFixer.sh"
+  fi
 
-if [ -f $SCRIPTS_DIR/CapsLockDelayFixer.sh ]; then
-  cat>"$AUTOSTART_DIR"/CapsLockDelayFixer.desktop<<EOF
-    [Desktop Entry]
-    Type=Application
-    Exec=bash -c 'sleep 10 && $SCRIPTS_DIR/CapsLockDelayFixer.sh'
-    Name=CapsLockDelayFixer
-    Comment=Caps Lock Delay Fixer
-EOF
-fi
-  echo 'Done! Please reboot the computer!'
+  if [ -f "$HOME/scripts/CapsLockDelayFixer.sh" ]; then
+    autoStartFile "CapsLockDelayFixer2" "bash -c sleep 10 && '$HOME/scripts/CapsLockDelayFixer.sh'" "CapsLockDelayFixer" "Caps Lock Delay Fixer"
+  fi
+
 }
 
-statusMessage() {
-  echo "$PACKAGE_MANAGER is not supported, try one of theese: apt, apt-get, nala, pacman, dnf."
+# reusable function for creating autostart files!
+autoStartFile() {
+  local AUTOSTART_DIR="$HOME/.config/autostart/"
+  [ ! -d "$AUTOSTART_DIR" ] && mkdir "$AUTOSTART_DIR"
+
+  if [ -d "$AUTOSTART_DIR" ]; then
+    cat >"$AUTOSTART_DIR/$1.desktop"<<EOF
+      [Desktop Entry]
+      Type=Application
+      Exec=$2
+      Name=$3
+      Comment=$4
+EOF
+  fi
 }
 
 main "$@"
