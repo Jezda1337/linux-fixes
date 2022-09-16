@@ -83,7 +83,7 @@ EOF
   elif [ "$1" == "fedora" ]; then
     imwheel -k -b "45"
   else
-    imwheel -k -b "45" #NEED TO TEST THIS ONE ON ARCH BASED DISTORS!!
+    imwheel -k -b "45"
   fi
 }
 
