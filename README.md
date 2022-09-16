@@ -10,7 +10,6 @@ most of the code is written by me, but some part of the code is not mine. The co
 The code for CAps LOck DElay I get from this repo:
 https://github.com/HexValid/Linux-CapsLock-Delay-Fixer
 
-<hr/>
 
 ## Usage:
 
@@ -37,8 +36,6 @@ the file serves to start the imwheel program at the very beginning of logging in
 
 CAps LOck DElay:
 On the ~/ path, a folder called scripts will be created, in it there will be a .sh file that will be started at the very beginning of entering the session, as well as imwheel. A file will also be created in the path ~/.config/autostart/CapsLockDelayFixer.desktop which will be used to start the script from the scripts folder.
-
-<hr />
 
 ## Motivation:
 
