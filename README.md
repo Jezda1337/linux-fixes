@@ -1,6 +1,6 @@
 # linux-fixes
 
-**only works on X11 ** :bangbang:
+**only works on X11** :bangbang:
 
 The scripts solves two problems:
 
