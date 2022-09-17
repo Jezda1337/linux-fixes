@@ -12,7 +12,9 @@ https://github.com/HexValid/Linux-CapsLock-Delay-Fixer
 
 <hr/>
 
-## Usage:
+## Usage
+
+**only works on X11**
 
 clone the repo
 
@@ -40,6 +42,6 @@ On the ~/ path, a folder called scripts will be created, in it there will be a .
 
 <hr />
 
-## Motivation:
+## Motivation
 
 Whenever I installed linux or moved to a new distribution, I always had a problem with scrolling and caps lock delay, I wrote a script for this reason to solve the mentioned problem.
