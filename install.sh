@@ -22,6 +22,11 @@ main() {
 				FIX=$2
 			elif [ "$param" == "d" ]; then
 				DISTRIBUTION="$2"
+			else
+				if [ "$param" == "u" ]; then
+					./lib/uninstall.sh
+					exit 1
+				fi
 			fi
 		fi
 		shift
