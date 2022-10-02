@@ -26,6 +26,15 @@ $ ./install.sh -d debian
 - arch
 - fedora
 
+-f stands for fix and accepts one value
+
+- 1 the number one will install and configure imwheel for slow scroll
+- 2 will fix only CApsLOckDElay
+
+if you want to fix both problems then just use ./install.sh -d {and your pacmage mananger}
+
+-u stands for uninstall, in case you want to uninstall all the cnfigureation and binaries.
+
 and also you can use any distribution that is based on already mentions base distributions.
 For example, if you using pop-os, ubuntu, kubuntu or zorin-os you will chose debian, you get the point.
 
